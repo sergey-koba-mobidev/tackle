@@ -1,0 +1,171 @@
+#!/usr/bin/env ruby
+require 'yaml'
+
+SUPPORTED_COMMANDS = %w(up down help)
+CONSUL_CONT_NAME = 'tackleconsul'
+REGISTRATOR_CONT_NAME = 'tackleregistrator'
+TACKLE_FILE = 'tackle.yml'
+DOCKER_IP = '172.17.42.1'
+
+class String
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+
+  def red()
+    colorize(31)
+  end
+
+  def green()
+    colorize(32)
+  end
+
+  def yellow()
+    colorize(33)
+  end
+
+  def blue()
+    colorize(34)
+  end
+
+  def pink()
+    colorize(35)
+  end
+
+  def light_blue()
+    colorize(36)
+  end
+end
+
+def exit_with_error(msg)
+  puts msg.red
+  exit
+end
+
+def list_supported_commands
+  "List of supported commands:\n" + SUPPORTED_COMMANDS.join("\n")
+end
+
+def verify_by_command(cmd, error_str)
+  exit_with_error error_str unless system("#{cmd} > /dev/null")
+end
+
+def verify_docker_opts
+  f = File.open('/etc/default/docker', 'r')
+  lines = f.readlines
+  f.close
+  if lines.grep(/#{DOCKER_IP}/).size == 0
+    lines = ["DOCKER_OPTS=\"--bip=#{DOCKER_IP}/24 --dns #{DOCKER_IP} --dns 8.8.8.8 --dns-search service.consul\"\n"] + lines
+    output = File.new('/etc/default/docker', 'w')
+    lines.each { |line| output.write line }
+    output.close
+    puts "Docker default options modified. (/etc/default/docker)\n".green
+    system('service docker restart')
+  end
+end
+
+def verify_host_dns
+  f = File.open('/etc/resolv.conf', 'r')
+  lines = f.readlines
+  f.close
+  if lines.grep(/#{DOCKER_IP}/).size == 0
+    lines = ["search service.consul\n", "nameserver #{DOCKER_IP}\n"] + lines
+    output = File.new('/etc/resolv.conf', 'w')
+    lines.each { |line| output.write line }
+    output.close
+    puts "Host's DNS successfully modified. (/etc/resolv.conf)\n".green
+  end
+end
+
+def verify_environment
+  verify_by_command 'docker --version', 'Docker is not installed'
+  verify_by_command 'docker-compose --version', 'Docker Compose is not installed'
+  verify_docker_opts
+  verify_host_dns
+end
+
+def verify_cmd(cmd)
+  exit_with_error 'Not supported command. ' + list_supported_commands unless SUPPORTED_COMMANDS.include? cmd
+end
+
+def verify_container_is_running(name)
+  output = %x( docker ps -f name=#{name} )
+  puts "#{name} is already running" if output.include?(name)
+  output.include?(name)
+end
+
+def stop_container(name)
+  puts 'Stop container:'.green
+  system("docker stop -t 2 #{name}")
+  puts 'Delete container:'.green
+  system("docker rm -f #{name}")
+end
+
+def verify_consul
+  run_cmd = "docker run --name=#{CONSUL_CONT_NAME} -d -p #{DOCKER_IP}:53:8600/udp -p 8400:8400 -p 8500:8500 gliderlabs/consul-server -node myconsul -bootstrap -advertise #{DOCKER_IP} -client 0.0.0.0"
+  running = verify_container_is_running(CONSUL_CONT_NAME)
+  unless running
+    puts "Run #{CONSUL_CONT_NAME} container:".green
+    system(run_cmd)
+  end
+end
+
+def verify_registrator
+  run_cmd = "docker run --name=#{REGISTRATOR_CONT_NAME} -d -v /var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator -internal consul://#{DOCKER_IP}:8500"
+  running = verify_container_is_running(REGISTRATOR_CONT_NAME)
+  unless running
+    puts "Run #{REGISTRATOR_CONT_NAME} container:".green
+    system(run_cmd)
+  end
+end
+
+def verify_tackle_yml
+  exit_with_error('No tackle.yml file found') unless File.exist?(Dir.pwd + '/' + TACKLE_FILE)
+end
+
+def run_tackle_yml
+  projects = YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
+  projects.each do |title, options|
+    puts "Running docker-compose for #{title}".green
+    system("cd #{options['root']} && docker-compose up -d")
+  end
+end
+
+def stop_tackle_yml
+  projects = YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
+  projects.each do |title, options|
+    puts "Stopping docker-compose for #{title}".green
+    system("cd #{options['root']} && docker-compose stop")
+  end
+end
+
+def process_command
+  cmd = ARGV[0]
+  cmd = 'help' if ARGV.size == 0
+  verify_cmd cmd
+  send "process_#{cmd}"
+end
+
+def process_help
+  puts list_supported_commands
+  puts "\nVisit http://localhost:8500/ui/#/dc1/services to see registered containers."
+end
+
+def process_up
+  verify_environment
+  verify_tackle_yml
+  verify_consul
+  verify_registrator
+  run_tackle_yml
+end
+
+def process_down
+  verify_environment
+  verify_tackle_yml
+  stop_container REGISTRATOR_CONT_NAME
+  stop_container CONSUL_CONT_NAME
+  stop_tackle_yml
+end
+
+# Script start
+process_command

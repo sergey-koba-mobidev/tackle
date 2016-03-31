@@ -1,0 +1,6 @@
+# save this file to tackle.yml
+project1:
+  root: /var/www/project1
+
+project2:
+  root: /var/www/project2

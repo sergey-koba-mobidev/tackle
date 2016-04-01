@@ -1,49 +1,16 @@
 #!/usr/bin/env ruby
 require 'yaml'
+require 'thor'
+require 'colored'
 
-SUPPORTED_COMMANDS = %w(up down help)
 CONSUL_CONT_NAME = 'tackleconsul'
 REGISTRATOR_CONT_NAME = 'tackleregistrator'
 TACKLE_FILE = 'tackle.yml'
 DOCKER_IP = '172.17.42.1'
 
-class String
-  def colorize(color_code)
-    "\e[#{color_code}m#{self}\e[0m"
-  end
-
-  def red()
-    colorize(31)
-  end
-
-  def green()
-    colorize(32)
-  end
-
-  def yellow()
-    colorize(33)
-  end
-
-  def blue()
-    colorize(34)
-  end
-
-  def pink()
-    colorize(35)
-  end
-
-  def light_blue()
-    colorize(36)
-  end
-end
-
 def exit_with_error(msg)
   puts msg.red
   exit
-end
-
-def list_supported_commands
-  "List of supported commands:\n" + SUPPORTED_COMMANDS.join("\n")
 end
 
 def verify_by_command(cmd, error_str)
@@ -139,33 +106,24 @@ def stop_tackle_yml
   end
 end
 
-def process_command
-  cmd = ARGV[0]
-  cmd = 'help' if ARGV.size == 0
-  verify_cmd cmd
-  send "process_#{cmd}"
+class TackleCLI < Thor
+  desc 'up', 'runs Consul, Registrator and Docker Compose for projects in tackle.yml'
+  def up
+    verify_environment
+    verify_tackle_yml
+    verify_consul
+    verify_registrator
+    run_tackle_yml
+  end
+
+  desc 'down', 'stops Consul, Registrator and Docker Compose for projects in tackle.yml'
+  def down
+    verify_environment
+    verify_tackle_yml
+    stop_container REGISTRATOR_CONT_NAME
+    stop_container CONSUL_CONT_NAME
+    stop_tackle_yml
+  end
 end
 
-def process_help
-  puts list_supported_commands
-  puts "\nVisit http://localhost:8500/ui/#/dc1/services to see registered containers."
-end
-
-def process_up
-  verify_environment
-  verify_tackle_yml
-  verify_consul
-  verify_registrator
-  run_tackle_yml
-end
-
-def process_down
-  verify_environment
-  verify_tackle_yml
-  stop_container REGISTRATOR_CONT_NAME
-  stop_container CONSUL_CONT_NAME
-  stop_tackle_yml
-end
-
-# Script start
-process_command
+TackleCLI.start(ARGV)

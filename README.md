@@ -5,7 +5,7 @@ It uses [Consul](https://hub.docker.com/r/progrium/consul/), [Registrator](https
 [Docker](https://docs.docker.com/engine/installation/linux/ubuntulinux/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
 ## Install
-Copy to any location.
+`bundle install`
 
 ## The problem
 Many docker-compose projects that should be able to communicate with each other.

@@ -55,7 +55,7 @@ def verify_docker_opts
   lines = f.readlines
   f.close
   if lines.grep(/#{DOCKER_IP}/).size == 0
-    lines = ["DOCKER_OPTS=\"--bip=#{DOCKER_IP}/24 --dns #{DOCKER_IP} --dns 8.8.8.8 --dns-search service.consul\"\n"] + lines
+    lines = ["DOCKER_OPTS=\"--bip=#{DOCKER_IP}/24 --dns #{DOCKER_IP} --dns 8.8.8.8 --dns-search consul\"\n"] + lines
     output = File.new('/etc/default/docker', 'w')
     lines.each { |line| output.write line }
     output.close
@@ -69,7 +69,7 @@ def verify_host_dns
   lines = f.readlines
   f.close
   if lines.grep(/#{DOCKER_IP}/).size == 0
-    lines = ["search service.consul\n", "nameserver #{DOCKER_IP}\n"] + lines
+    lines = ["search consul\n", "nameserver #{DOCKER_IP}\n"] + lines
     output = File.new('/etc/resolv.conf', 'w')
     lines.each { |line| output.write line }
     output.close

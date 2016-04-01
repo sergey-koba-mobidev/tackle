@@ -36,3 +36,20 @@ project2:
 ## Requirements
 - Ruby
 - Gem yaml
+
+## Creating a discoverable containers
+When running any container via docker, which exposes port, it will be registered in Consul.
+You can access it via `container_name.service`.
+To give your service a name you can follow the next example in `docker-compose.yml`
+
+```yml
+web:
+  build: .
+  command:  bundle exec rails s -p 3000 -b '0.0.0.0'
+
+  environment:
+    RAILS_ENV: development
+    SERVICE_NAME: myservicename
+```
+
+Note that `SERVICE_NAME` should be alphanumerical and dash. No underscore or dots are allowed by DNS parser.

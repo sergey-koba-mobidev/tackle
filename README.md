@@ -21,13 +21,19 @@ Many docker-compose projects that should be able to communicate with each other.
 - `help` - Show short help
 - `up` - Runs Consul, Registrator and Docker Compose for projects in tackle.yml
 - `down` - Stops Consul, Registrator and Docker Compose for projects in tackle.yml
+- `setup` - Run setup steps for projects in tackle.yml
 
-Example `./tackle help`
+Example `./tackle up`
+
+Consul UI is available at [http://localhost:8500/ui/#/dc1/services](http://localhost:8500/ui/#/dc1/services)
 
 ## tackle.yml
 ```yml
 project1:
   root: /var/www/project1
+  setup:
+    - docker-compose run web bundle install
+    - docker-compose run web rake db:create db:migrate db:seed
 
 project2:
   root: /var/www/project2

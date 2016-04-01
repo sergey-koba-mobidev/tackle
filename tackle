@@ -106,6 +106,18 @@ def stop_tackle_yml
   end
 end
 
+def setup_tackle_yml
+  projects = YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
+  projects.each do |title, options|
+    puts "Running setup steps for #{title}".green
+    if options["setup"].size > 0
+      options["setup"].each do |cmd|
+        system("cd #{options['root']} && #{cmd}")
+      end
+    end
+  end
+end
+
 class TackleCLI < Thor
   desc 'up', 'runs Consul, Registrator and Docker Compose for projects in tackle.yml'
   def up
@@ -123,6 +135,13 @@ class TackleCLI < Thor
     stop_container REGISTRATOR_CONT_NAME
     stop_container CONSUL_CONT_NAME
     stop_tackle_yml
+  end
+
+  desc 'setup', 'run setup steps for projects in tackle.yml'
+  def setup
+    verify_environment
+    verify_tackle_yml
+    setup_tackle_yml
   end
 end
 

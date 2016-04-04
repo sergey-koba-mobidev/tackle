@@ -155,6 +155,7 @@ class TackleCLI < Thor
     verify_consul
     verify_registrator
     run_tackle_yml
+    puts 'Go to http://localhost:8500/ui/#/dc1/services to see discovered services'.green
   end
 
   desc 'down', 'stops Consul, Registrator and Docker Compose for projects in tackle.yml'

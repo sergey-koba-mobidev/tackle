@@ -9,6 +9,7 @@ Host machine and containers use [Consul](https://hub.docker.com/r/progrium/consu
 
 ## Install
 - Install [Ansible](http://docs.ansible.com/ansible/intro_installation.html).
+- Install bundle if not already `gem install bundle`
 - run in the project's folder `bundle install`
 - run in the project's folder `./tackle install` it will run Ansible's script to install Docker in Docker Compose.
 

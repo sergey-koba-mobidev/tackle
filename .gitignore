@@ -1,3 +1,4 @@
 .idea
 tackle.yml
 Gemfile.lock
+install.retry

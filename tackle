@@ -2,6 +2,7 @@
 require 'yaml'
 require 'thor'
 require 'colored'
+require './libs/os'
 
 CONSUL_CONT_NAME = 'tackleconsul'
 REGISTRATOR_CONT_NAME = 'tackleregistrator'

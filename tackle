@@ -2,36 +2,11 @@
 require 'yaml'
 require 'thor'
 require 'colored'
-require 'shellwords'
 
 CONSUL_CONT_NAME = 'tackleconsul'
 REGISTRATOR_CONT_NAME = 'tackleregistrator'
 TACKLE_FILE = 'tackle.yml'
 DOCKER_IP = '172.17.42.1'
-
-# Docker Upstart and SysVinit configuration file
-
-#
-# THIS FILE DOES NOT APPLY TO SYSTEMD
-#
-#   Please see the documentation for "systemd drop-ins":
-#   https://docs.docker.com/engine/articles/systemd/
-#
-
-# Customize location of Docker binary (especially for development testing).
-#DOCKER="/usr/local/bin/docker"
-
-# Use DOCKER_OPTS to modify the daemon startup options.
-#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
-
-# If you need Docker to use an HTTP proxy, it can also be specified here.
-#export http_proxy="http://127.0.0.1:3128/"
-
-# This is also a handy place to tweak where Docker's temporary files go.
-#export TMPDIR="/mnt/bigdrive/docker-tmp"
-
-#sudo sh -c "echo 'DOCKER_OPTS\=\"--bip\=172.17.42.1/24\ --dns\ 172.17.42.1\ --dns\ 8.8.8.8\ --dns-search\ consul\" \#\ Docker\ Upstart\ and\ SysVinit\ configuration\ file '' \# \#\ THIS\ FILE\ DOES\ NOT\ APPLY\ TO\ SYSTEMD \# \#\ \ \ Please\ see\ the\ documentation\ for\ \"systemd\ drop-ins\": \#\ \ \ https://docs.docker.com/engine/articles/systemd/ \# '' \#\ Customize\ location\ of\ Docker\ binary\ \(especially\ for\ development\ testing\). \#DOCKER\=\"/usr/local/bin/docker\" '' \#\ Use\ DOCKER_OPTS\ to\ modify\ the\ daemon\ startup\ options. \#DOCKER_OPTS\=\"--dns\ 8.8.8.8\ --dns\ 8.8.4.4\" '' \#\ If\ you\ need\ Docker\ to\ use\ an\ HTTP\ proxy,\ it\ can\ also\ be\ specified\ here. \#export\ http_proxy\=\"http://127.0.0.1:3128/\" '' \#\ This\ is\ also\ a\ handy\ place\ to\ tweak\ where\ Docker\'s\ temporary\ files\ go. \#export\ TMPDIR\=\"/mnt/bigdrive/docker-tmp\"' > /etc/default/docker "
-
 
 def exit_with_error(msg)
   puts msg.red
@@ -40,13 +15,6 @@ end
 
 def verify_by_command(cmd, error_str)
   exit_with_error error_str unless system("#{cmd} > /dev/null")
-end
-
-def lines_to_cmd_line(lines)
-  lines.each do |l|
-    puts l
-  end
-  Shellwords.join(lines)
 end
 
 def verify_docker_opts
@@ -172,6 +140,11 @@ class TackleCLI < Thor
     verify_environment
     verify_tackle_yml
     setup_tackle_yml
+  end
+
+  desc 'install', 'install Docker and Docker Compose'
+  def install
+    system('ansible-playbook ./ansible/install.yml -i 127.0.0.1, --ask-sudo-pass --verbose')
   end
 end
 

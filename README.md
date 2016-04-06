@@ -1,14 +1,16 @@
 # tackle
 
-Tackle is a local development tool for Ubuntu (for now) users, who have many docker-compose projects.
-It uses [Consul](https://hub.docker.com/r/progrium/consul/), [Registrator](https://github.com/gliderlabs/registrator), 
-[Docker](https://docs.docker.com/engine/installation/linux/ubuntulinux/) and [Docker Compose](https://docs.docker.com/compose/install/).
+![alt tackle](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Block-and-tackle-in-use.svg/200px-Block-and-tackle-in-use.svg.png)
+
+Tackle is a local development tool for multiple Docker Compose projects interconnected via Service Discovery mechanism.
+Host machine and containers use [Consul](https://hub.docker.com/r/progrium/consul/) Docker container as DNS resolver and Service Discovery agent. 
+[Registrator](https://github.com/gliderlabs/registrator) is used to register docker containers in Consul. 
+[Docker](https://docs.docker.com/engine/installation/linux/ubuntulinux/) and [Docker Compose](https://docs.docker.com/compose/install/) are installed during installation steps.
 
 ## Install
-`bundle install`
-
-## The problem
-Many docker-compose projects that should be able to communicate with each other.
+- Install [Ansible](http://docs.ansible.com/ansible/intro_installation.html).
+- run in the project's folder `bundle install`
+- run in the project's folder `./tackle install` it will run Ansible's script to install Docker in Docker Compose.
 
 ## What it does?
 - Adds default options for new Docker's container (sets Consul as DNS for container). Containers should see each other using container name.
@@ -22,6 +24,7 @@ Many docker-compose projects that should be able to communicate with each other.
 - `up` - Runs Consul, Registrator and Docker Compose for projects in tackle.yml
 - `down` - Stops Consul, Registrator and Docker Compose for projects in tackle.yml
 - `setup` - Run setup steps for projects in tackle.yml
+- `install` - Install Docker and Docker Compose
 
 Example `./tackle up`
 
@@ -41,7 +44,7 @@ project2:
 
 ## Requirements
 - Ruby
-- Gem yaml
+- Ansible
 
 ## Creating a discoverable containers
 When running any container via docker, which exposes port, it will be registered in Consul.

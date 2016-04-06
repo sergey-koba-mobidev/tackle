@@ -7,7 +7,7 @@
     apt: name=docker-engine update_cache=yes
     sudo: yes
 
-  - name: Enable Doecker for not sudo
+  - name: Enable Docker for non sudo users
     shell: usermod -aG docker {{ ansible_user_id }}
     sudo: yes
 
@@ -15,7 +15,7 @@
     service: name=docker state=started
     sudo: yes
 
-  - name: Install Docker Compose
+  - name: Install Docker Compose 1.7.0
     shell: curl -L https://github.com/docker/compose/releases/download/1.7.0-rc1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     sudo: yes
 

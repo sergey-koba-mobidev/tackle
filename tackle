@@ -49,10 +49,6 @@ def verify_environment
   verify_host_dns
 end
 
-def verify_cmd(cmd)
-  exit_with_error 'Not supported command. ' + list_supported_commands unless SUPPORTED_COMMANDS.include? cmd
-end
-
 def verify_container_is_running(name)
   output = %x( docker ps -f name=#{name} )
   puts "#{name} is already running" if output.include?(name)

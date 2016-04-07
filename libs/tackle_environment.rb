@@ -1,7 +1,11 @@
+require './libs/config_manager'
+require 'colored'
+
 class TackleEnvironment
-
   def self.build(os = 'linux')
-
+    require "./libs/#{os}/docker_manager"
+    require "./libs/#{os}/host_manager"
+    new(DockerManager.new, ConfigManager.new, HostManager.new)
   end
 
   def initialize(docker_manager, config_manager, host_manager)
@@ -9,4 +13,56 @@ class TackleEnvironment
     @config_manager = config_manager
     @host_manager = host_manager
   end
+
+  def exit_with_error(msg)
+    puts msg.red
+    exit
+  end
+
+  def verify_environment
+    exit_with_error 'Docker is not installed' unless @docker_manager.installed?
+    exit_with_error 'Docker Compose is not installed' unless @docker_manager.compose_installed?
+    exit_with_error("No #{@config_manager.TACKLE_FILE} file found") unless @config_manager.config_file_exists
+    @docker_manager.modify_dns
+    @host_manager.modify_dns @docker_manager.ip
+  end
+
+  def verify_consul_running
+    @docker_manager.run_consul
+    @docker_manager.run_registrator
+  end
+
+  def stop_consul
+    @docker_manager.stop_consul
+    @docker_manager.stop_registrator
+  end
+
+  def run_projects
+    projects = @config_manager.projects_list
+    projects.each do |title, options|
+      puts "Running docker-compose for #{title}".green
+      @docker_manager.run_compose options['root']
+    end
+  end
+
+  def stop_projects
+    projects = @config_manager.projects_list
+    projects.each do |title, options|
+      puts "Stopping docker-compose for #{title}".green
+      @docker_manager.stop_compose options['root']
+    end
+  end
+
+  def setup_projects
+    projects = @config_manager.projects_list
+    projects.each do |title, options|
+      puts "Running setup steps for #{title}".green
+      if options["setup"].size > 0
+        options["setup"].each do |cmd|
+          system("cd #{options['root']} && #{cmd}")
+        end
+      end
+    end
+  end
+
 end

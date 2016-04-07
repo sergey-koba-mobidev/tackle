@@ -1,142 +1,30 @@
 #!/usr/bin/env ruby
-require 'yaml'
 require 'thor'
-require 'colored'
 require './libs/os'
+require './libs/tackle_environment'
 
-CONSUL_CONT_NAME = 'tackleconsul'
-REGISTRATOR_CONT_NAME = 'tackleregistrator'
-TACKLE_FILE = 'tackle.yml'
-DOCKER_IP = '172.17.42.1'
-
-def exit_with_error(msg)
-  puts msg.red
-  exit
-end
-
-def verify_by_command(cmd, error_str)
-  exit_with_error error_str unless system("#{cmd} > /dev/null")
-end
-
-def verify_docker_opts
-  f = File.open('/etc/default/docker', 'r')
-  lines = f.readlines
-  f.close
-  if lines.grep(/#{DOCKER_IP}/).size == 0
-    system("sudo sh -c \"echo 'DOCKER_OPTS=\\\"--bip=#{DOCKER_IP}/24 --dns #{DOCKER_IP} --dns 8.8.8.8 --dns-search consul\\\"' >> /etc/default/docker\"")
-    puts "Docker default options modified. (/etc/default/docker)\n".green
-    system('sudo service docker restart')
-  end
-end
-
-def verify_host_dns
-  #TODO file is overwritten by resolveconf
-  f = File.open('/etc/resolv.conf', 'r')
-  lines = f.readlines
-  f.close
-  if lines.grep(/#{DOCKER_IP}/).size == 0
-    # Prepend lines to a file
-    system("sudo sh -c 'echo \"nameserver #{DOCKER_IP}\"|cat - /etc/resolv.conf > /tmp/out && mv /tmp/out /etc/resolv.conf'")
-    system("sudo sh -c 'echo \"search consul\"|cat - /etc/resolv.conf > /tmp/out && mv /tmp/out /etc/resolv.conf'")
-    puts "Host's DNS successfully modified. (/etc/resolv.conf)\n".green
-  end
-end
-
-def verify_environment
-  verify_by_command 'docker --version', 'Docker is not installed'
-  verify_by_command 'docker-compose --version', 'Docker Compose is not installed'
-  verify_docker_opts
-  verify_host_dns
-end
-
-def verify_container_is_running(name)
-  output = %x( docker ps -f name=#{name} )
-  puts "#{name} is already running" if output.include?(name)
-  output.include?(name)
-end
-
-def stop_container(name)
-  puts 'Stop container:'.green
-  system("docker stop -t 2 #{name}")
-  puts 'Delete container:'.green
-  system("docker rm -f #{name}")
-end
-
-def verify_consul
-  run_cmd = "docker run --name=#{CONSUL_CONT_NAME} -d -p #{DOCKER_IP}:53:8600/udp -p 8400:8400 -p 8500:8500 gliderlabs/consul-server -node myconsul -bootstrap -advertise #{DOCKER_IP} -client 0.0.0.0"
-  running = verify_container_is_running(CONSUL_CONT_NAME)
-  unless running
-    puts "Run #{CONSUL_CONT_NAME} container:".green
-    system(run_cmd)
-  end
-end
-
-def verify_registrator
-  run_cmd = "docker run --name=#{REGISTRATOR_CONT_NAME} -d -v /var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator -internal consul://#{DOCKER_IP}:8500"
-  running = verify_container_is_running(REGISTRATOR_CONT_NAME)
-  unless running
-    puts "Run #{REGISTRATOR_CONT_NAME} container:".green
-    system(run_cmd)
-  end
-end
-
-def verify_tackle_yml
-  exit_with_error('No tackle.yml file found') unless File.exist?(Dir.pwd + '/' + TACKLE_FILE)
-end
-
-def run_tackle_yml
-  projects = YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
-  projects.each do |title, options|
-    puts "Running docker-compose for #{title}".green
-    system("cd #{options['root']} && docker-compose up -d")
-  end
-end
-
-def stop_tackle_yml
-  projects = YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
-  projects.each do |title, options|
-    puts "Stopping docker-compose for #{title}".green
-    system("cd #{options['root']} && docker-compose stop")
-  end
-end
-
-def setup_tackle_yml
-  projects = YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
-  projects.each do |title, options|
-    puts "Running setup steps for #{title}".green
-    if options["setup"].size > 0
-      options["setup"].each do |cmd|
-        system("cd #{options['root']} && #{cmd}")
-      end
-    end
-  end
-end
+TACKLE_ENVIRONMENT = TackleEnvironment.build(OS.get)
 
 class TackleCLI < Thor
   desc 'up', 'runs Consul, Registrator and Docker Compose for projects in tackle.yml'
   def up
-    verify_environment
-    verify_tackle_yml
-    verify_consul
-    verify_registrator
-    run_tackle_yml
+    TACKLE_ENVIRONMENT.verify_environment
+    TACKLE_ENVIRONMENT.verify_consul_running
+    TACKLE_ENVIRONMENT.run_projects
     puts 'Go to http://localhost:8500/ui/#/dc1/services to see discovered services'.green
   end
 
   desc 'down', 'stops Consul, Registrator and Docker Compose for projects in tackle.yml'
   def down
-    verify_environment
-    verify_tackle_yml
-    stop_container REGISTRATOR_CONT_NAME
-    stop_container CONSUL_CONT_NAME
-    stop_tackle_yml
+    TACKLE_ENVIRONMENT.verify_environment
+    TACKLE_ENVIRONMENT.stop_consul
+    TACKLE_ENVIRONMENT.stop_projects
   end
 
   desc 'setup', 'run setup steps for projects in tackle.yml'
   def setup
-    verify_environment
-    verify_tackle_yml
-    setup_tackle_yml
+    TACKLE_ENVIRONMENT.verify_environment
+    TACKLE_ENVIRONMENT.setup_projects
   end
 
   desc 'install', 'install Docker and Docker Compose'

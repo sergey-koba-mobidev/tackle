@@ -1,4 +1,6 @@
-class HostManager
+require './libs/base/host_manager_base'
+
+class HostManager < HostManagerBase
 
   def modify_dns(docker_ip)
     #TODO file is overwritten by resolveconf

@@ -1,6 +1,6 @@
 require 'yaml'
 
-class ConfigManager
+class ConfigManagerBase
   TACKLE_FILE = 'tackle.yml'
 
   def config_file_exists

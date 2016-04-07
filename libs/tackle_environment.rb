@@ -1,10 +1,10 @@
-require './libs/config_manager'
 require 'colored'
 
 class TackleEnvironment
+  MANAGERS = %w(docker config host)
+
   def self.build(os = 'linux')
-    require "./libs/#{os}/docker_manager"
-    require "./libs/#{os}/host_manager"
+    MANAGERS.each {|manager| require("./libs/#{os}/#{manager}_manager") }
     new(DockerManager.new, ConfigManager.new, HostManager.new)
   end
 

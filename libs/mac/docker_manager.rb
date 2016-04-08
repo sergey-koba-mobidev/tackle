@@ -19,7 +19,12 @@ class DockerManager < DockerManagerBase
     return result, 'VirtualBox is not installed.' unless result
 
     stdout, stdeerr, status = Open3.capture3('VBoxManage list vms')
-    system("docker-machine create --driver virtualbox #{vm_name}") unless stdout.include? vm_name
+    unless stdout.include? vm_name
+      system("docker-machine create --driver virtualbox #{vm_name}")
+      system("docker-machine scp docker/bootsync.sh #{vm_name}:/tmp/bootsync.sh")
+      system("docker-machine ssh #{vm_name} \"sudo mv /tmp/bootsync.sh /var/lib/boot2docker/bootsync.sh\"")
+      system("docker-machine restart #{vm_name}")
+    end
 
     stdout, stdeerr, status = Open3.capture3('docker ps')
     return false, "Please run 'eval $(docker-machine env #{vm_name})' and repeat tackle command." if stdeerr.include?('Cannot connect')

@@ -25,3 +25,19 @@
         - docker
         - docker-machine
         - docker-compose
+
+    - name: Add NFS share to /etc/exports
+      blockinfile:
+        dest: /etc/exports
+        create: yes
+        marker: "## {mark} Tackle Developer Environment - ANSIBLE MANAGED BLOCK ##"
+        content: '/Users 192.168.99.100 -alldirs -mapall=0:80'
+      become: yes
+      become_method: sudo
+      register: exports
+
+    - name: Restart nfsd
+      command: sudo nfsd restart
+      become: yes
+      become_method: sudo
+      when: exports.changed

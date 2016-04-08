@@ -4,14 +4,14 @@
 
 Tackle is a local development tool for multiple Docker Compose projects interconnected via Service Discovery mechanism.
 Host machine and containers use [Consul](https://hub.docker.com/r/progrium/consul/) Docker container as DNS resolver and Service Discovery agent. 
-[Registrator](https://github.com/gliderlabs/registrator) is used to register docker containers in Consul. 
+[Registrator](https://github.com/gliderlabs/registrator) is used to register docker containers to Consul.
 [Docker](https://docs.docker.com/engine/installation/linux/ubuntulinux/) and [Docker Compose](https://docs.docker.com/compose/install/) are installed during installation steps.
 
 ## Install
 - Install [Ansible](http://docs.ansible.com/ansible/intro_installation.html).
 - Install bundle if not already `gem install bundle`
 - run in the project's folder `bundle install`
-- run in the project's folder `./tackle install` it will run Ansible's script to install Docker in Docker Compose.
+- run in the project's folder `./tackle install` it will run Ansible's script to install Docker and Docker Compose.
 
 ## What it does?
 - Adds default options for new Docker's container (sets Consul as DNS for container). Containers should see each other using container name.

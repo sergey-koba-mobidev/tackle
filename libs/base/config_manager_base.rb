@@ -1,13 +1,16 @@
 require 'yaml'
 
 class ConfigManagerBase
-  TACKLE_FILE = 'tackle.yml'
+
+  def config_file
+    'tackle.yml'
+  end
 
   def config_file_exists
-    File.exist?(Dir.pwd + '/' + TACKLE_FILE)
+    File.exist?(Dir.pwd + '/' + config_file)
   end
 
   def projects_list
-    YAML.load_file(Dir.pwd + '/' + TACKLE_FILE)
+    YAML.load_file(Dir.pwd + '/' + config_file)
   end
 end

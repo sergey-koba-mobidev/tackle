@@ -2,18 +2,25 @@ class DockerManagerBase
   CONSUL_CONTAINER_NAME = 'tackleconsul'
   REGISTRATOR_CONTAINER_NAME = 'tackleregistrator'
 
-  # TODO: Override in OS specific class
-  # Should return predefined IP of Docker machine
   def ip
+    '172.17.42.1'
   end
 
-  # TODO: Override in OS specific class
-  # Should modify Docker containers DNS to be configured to ip
   def modify_dns
+    f = File.open('/etc/default/docker', 'r')
+    lines = f.readlines
+    f.close
+    if lines.grep(/#{ip}/).size == 0
+      system("sudo sh -c \"echo 'DOCKER_OPTS=\\\"--bip=#{ip}/24 --dns #{ip} --dns 8.8.8.8 --dns-search consul\\\"' >> /etc/default/docker\"")
+      puts "Docker default options modified. (/etc/default/docker)\n".green
+      system('sudo service docker restart')
+    end
   end
 
   def installed?
-    system("docker --version > /dev/null")
+    result = system('docker --version > /dev/null')
+    error_msg =  result ? '' : 'Docker is not Installed'
+    return result, error_msg
   end
 
   def compose_installed?

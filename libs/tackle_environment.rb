@@ -20,9 +20,10 @@ class TackleEnvironment
   end
 
   def verify_environment
-    exit_with_error 'Docker is not installed' unless @docker_manager.installed?
+    docker_installed, error_msg = @docker_manager.installed?
+    exit_with_error error_msg unless docker_installed
     exit_with_error 'Docker Compose is not installed' unless @docker_manager.compose_installed?
-    exit_with_error("No #{@config_manager.TACKLE_FILE} file found") unless @config_manager.config_file_exists
+    exit_with_error("No #{@config_manager.config_file} file found") unless @config_manager.config_file_exists
     @docker_manager.modify_dns
     @host_manager.modify_dns @docker_manager.ip
   end

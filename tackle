@@ -11,7 +11,7 @@ class TackleCLI < Thor
     TACKLE_ENVIRONMENT.verify_environment
     TACKLE_ENVIRONMENT.verify_consul_running
     TACKLE_ENVIRONMENT.run_projects
-    puts 'Go to http://localhost:8500/ui/#/dc1/services to see discovered services'.green
+    TACKLE_ENVIRONMENT.print_consul_uri
   end
 
   desc 'down', 'stops Consul, Registrator and Docker Compose for projects in tackle.yml'

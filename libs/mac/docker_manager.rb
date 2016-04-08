@@ -4,7 +4,7 @@ require 'open3'
 class DockerManager < DockerManagerBase
   def ip
     stdout, stdeerr, status = Open3.capture3("docker-machine ip #{vm_name}")
-    stdout
+    stdout.strip
   end
 
   def vm_name

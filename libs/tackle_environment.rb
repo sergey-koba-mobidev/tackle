@@ -38,6 +38,10 @@ class TackleEnvironment
     @docker_manager.stop_registrator
   end
 
+  def print_consul_uri
+    puts "Go to http://#{@docker_manager.ip}:8500/ui/#/dc1/services to see discovered services".green
+  end
+
   def run_projects
     projects = @config_manager.projects_list
     projects.each do |title, options|

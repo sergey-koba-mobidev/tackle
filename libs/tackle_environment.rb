@@ -64,6 +64,7 @@ class TackleEnvironment
       puts "Running setup steps for #{title}".green
       if options["setup"].size > 0
         options["setup"].each do |cmd|
+          puts "Running  #{cmd}".green
           system("cd #{options['root']} && #{cmd}")
         end
       end

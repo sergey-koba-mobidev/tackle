@@ -20,8 +20,8 @@ class DockerManager < DockerManagerBase
 
     stdout, stdeerr, status = Open3.capture3('VBoxManage list vms')
     unless stdout.include? vm_name
-      system("docker-machine create --driver virtualbox #{vm_name}")
-      system("ansible-playbook ./ansible/darwin_nfs.yml -i 127.0.0.1, --virtualbox-memory 4096 --ask-sudo-pass --verbose --extra-vars 'docker_machine_ip=#{ip}'")
+      system("docker-machine create --driver virtualbox --virtualbox-memory 4096 #{vm_name}")
+      system("ansible-playbook ./ansible/darwin_nfs.yml -i 127.0.0.1, --ask-sudo-pass --verbose --extra-vars 'docker_machine_ip=#{ip}'")
       system("docker-machine scp docker/bootsync.sh #{vm_name}:/tmp/bootsync.sh")
       system("docker-machine ssh #{vm_name} \"sudo mv /tmp/bootsync.sh /var/lib/boot2docker/bootsync.sh\"")
       system("docker-machine stop #{vm_name}")

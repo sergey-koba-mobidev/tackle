@@ -3,8 +3,8 @@ require './libs/base/host_manager_base'
 class HostManager < HostManagerBase
 
   def modify_dns(docker_ip)
-    system("sudo sh -c 'mkdir /etc/resolver'")
-    system("sudo sh -c 'touch /etc/resolver/consul'")
+    system("sudo sh -c 'mkdir /etc/resolver'") unless File.directory?('/etc/resolver')
+    system("sudo sh -c 'touch /etc/resolver/consul'") unless File.exists?('/etc/resolver/consul')
     f = File.open('/etc/resolver/consul', 'r')
     lines = f.readlines
     f.close

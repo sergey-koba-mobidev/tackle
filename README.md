@@ -66,4 +66,4 @@ web:
 Note that `SERVICE_NAME` should be alphanumerical and dash. No underscore or dots are allowed by DNS parser.
 
 ## Thx
-Many thanks to [IFTTT/dash](https://github.com/IFTTT/dash) for mac version code.
+Many thanks to [IFTTT/dash](https://github.com/IFTTT/dash) for mac version code inspiration.

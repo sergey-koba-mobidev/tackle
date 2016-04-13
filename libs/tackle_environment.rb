@@ -43,24 +43,21 @@ class TackleEnvironment
   end
 
   def run_projects
-    projects = @config_manager.projects_list
-    projects.each do |title, options|
+    @config_manager.with_projects do |title, options|
       puts "Running docker-compose for #{title}".green
       @docker_manager.run_compose options['root']
     end
   end
 
   def stop_projects
-    projects = @config_manager.projects_list
-    projects.each do |title, options|
+    @config_manager.with_projects do |title, options|
       puts "Stopping docker-compose for #{title}".green
       @docker_manager.stop_compose options['root']
     end
   end
 
   def setup_projects
-    projects = @config_manager.projects_list
-    projects.each do |title, options|
+    @config_manager.with_projects do |title, options|
       puts "Running setup steps for #{title}".green
       if options["setup"].size > 0
         options["setup"].each do |cmd|

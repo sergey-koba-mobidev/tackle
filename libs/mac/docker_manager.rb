@@ -28,8 +28,13 @@ class DockerManager < DockerManagerBase
       system("docker-machine start #{vm_name}")
     end
 
+    stdout, stdeerr, status = Open3.capture3('VBoxManage list runningvms')
+    unless stdout.include? vm_name
+      system("VBoxManage startvm #{vm_name} --type headless")
+    end
+
     stdout, stdeerr, status = Open3.capture3('docker ps')
-    return false, "Please run 'eval $(docker-machine env #{vm_name})' and repeat tackle command." if stdeerr.include?('Cannot connect')
+    return false, "Please run 'eval $(docker-machine env #{vm_name})' and repeat tackle command. If eval returned error wait until VM is up and repeat eval." if stdeerr.include?('Cannot connect')
 
     return true, ''
   end

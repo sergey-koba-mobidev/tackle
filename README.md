@@ -41,6 +41,7 @@ project1:
 
 project2:
   root: /var/www/project2
+  active: false
 ```
 
 ## Requirements

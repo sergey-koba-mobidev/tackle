@@ -14,6 +14,11 @@ class ConfigManagerBase
     YAML.load_file(Dir.pwd + '/' + config_file)
   end
 
+  def project(title)
+    list = YAML.load_file(Dir.pwd + '/' + config_file)
+    list[title]
+  end
+
   def with_projects
     projects_list.each do |title, options|
       next if options.key?('active') && !options['active']

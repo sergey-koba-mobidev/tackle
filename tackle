@@ -6,25 +6,37 @@ require './libs/tackle_environment'
 TACKLE_ENVIRONMENT = TackleEnvironment.build(OS.get)
 
 class TackleCLI < Thor
-  desc 'up', 'runs Consul, Registrator and Docker Compose for projects in tackle.yml'
-  def up
+  desc 'up [PROJECT]', 'runs Consul, Registrator and Docker Compose for projects in tackle.yml'
+  def up(project = nil)
     TACKLE_ENVIRONMENT.verify_environment
     TACKLE_ENVIRONMENT.verify_consul_running
-    TACKLE_ENVIRONMENT.run_projects
+    if project == nil
+      TACKLE_ENVIRONMENT.run_projects
+    else
+      TACKLE_ENVIRONMENT.run_project(project)
+    end
     TACKLE_ENVIRONMENT.print_consul_uri
   end
 
-  desc 'down', 'stops Consul, Registrator and Docker Compose for projects in tackle.yml'
-  def down
+  desc 'down [PROJECT]', 'stops Consul, Registrator and Docker Compose for projects in tackle.yml'
+  def down(project = nil)
     TACKLE_ENVIRONMENT.verify_environment
-    TACKLE_ENVIRONMENT.stop_consul
-    TACKLE_ENVIRONMENT.stop_projects
+    TACKLE_ENVIRONMENT.stop_consul if project == nil
+    if project == nil
+      TACKLE_ENVIRONMENT.stop_projects
+    else
+      TACKLE_ENVIRONMENT.stop_project(project)
+    end
   end
 
-  desc 'setup', 'run setup steps for projects in tackle.yml'
-  def setup
+  desc 'setup [PROJECT]', 'run setup steps for projects in tackle.yml'
+  def setup(project = nil)
     TACKLE_ENVIRONMENT.verify_environment
-    TACKLE_ENVIRONMENT.setup_projects
+    if project == nil
+      TACKLE_ENVIRONMENT.setup_projects
+    else
+      TACKLE_ENVIRONMENT.setup_project(project)
+    end
   end
 
   desc 'install', 'install Docker and Docker Compose'

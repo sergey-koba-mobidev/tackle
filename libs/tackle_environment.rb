@@ -4,7 +4,7 @@ class TackleEnvironment
   MANAGERS = %w(docker config host)
 
   def self.build(os = 'linux')
-    MANAGERS.each {|manager| require("./libs/#{os}/#{manager}_manager") }
+    MANAGERS.each { |manager| require("./libs/#{os}/#{manager}_manager") }
     new(DockerManager.new, ConfigManager.new, HostManager.new)
   end
 
@@ -42,11 +42,23 @@ class TackleEnvironment
     puts "Go to http://#{@docker_manager.ip}:8500/ui/#/dc1/services to see discovered services".green
   end
 
+  def run_project(project)
+    pr = @config_manager.project(project)
+    puts "Running docker-compose for #{project}".green
+    @docker_manager.run_compose pr['root']
+  end
+
   def run_projects
     @config_manager.with_projects do |title, options|
       puts "Running docker-compose for #{title}".green
       @docker_manager.run_compose options['root']
     end
+  end
+
+  def stop_project(project)
+    pr = @config_manager.project(project)
+    puts "Stopping docker-compose for #{project}".green
+    @docker_manager.stop_compose pr['root']
   end
 
   def stop_projects
@@ -59,6 +71,17 @@ class TackleEnvironment
   def list_projects
     @config_manager.with_projects do |title, options|
       puts "#{title}"
+    end
+  end
+
+  def setup_project(project)
+    pr = @config_manager.project(project)
+    puts "Running setup steps for #{project}".green
+    if pr["setup"].size > 0
+      pr["setup"].each do |cmd|
+        puts "Running  #{cmd}".green
+        exit_with_error("Error running  #{cmd}") unless system("cd #{options['root']} && #{cmd}")
+      end
     end
   end
 

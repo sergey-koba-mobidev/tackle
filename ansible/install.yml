@@ -4,4 +4,4 @@
   roles:
       - { role: tackle_darwin, when: ansible_os_family == 'Darwin' }
       - { role: tackle_debian, when: ansible_os_family == 'Debian' }
-      - { role: tackle_debian, when: ansible_os_family == 'Linuxmint' }
+      - { role: tackle_linuxmint, when: ansible_os_family == 'Linuxmint' }

@@ -31,6 +31,12 @@ class TackleCLI < Thor
   def install
     system('ansible-playbook ./ansible/install.yml -i 127.0.0.1, --ask-sudo-pass --verbose')
   end
+
+  desc 'list', 'list active projects'
+  def list
+    TACKLE_ENVIRONMENT.verify_environment
+    TACKLE_ENVIRONMENT.list_projects
+  end
 end
 
 TackleCLI.start(ARGV)

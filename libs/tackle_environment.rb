@@ -56,6 +56,12 @@ class TackleEnvironment
     end
   end
 
+  def list_projects
+    @config_manager.with_projects do |title, options|
+      puts "#{title}"
+    end
+  end
+
   def setup_projects
     @config_manager.with_projects do |title, options|
       puts "Running setup steps for #{title}".green

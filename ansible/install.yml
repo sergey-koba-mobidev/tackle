@@ -1,8 +1,6 @@
 ---
-# Ubuntu
-- include: debian.yml
-  when: ansible_os_family == 'Debian'
-
-# Mac
-- include: darwin.yml
-  when: ansible_os_family == 'Darwin'
+- hosts: 127.0.0.1
+  connection: local
+  roles:
+      - { role: tackle_darwin, when: ansible_os_family == 'Darwin' }
+      - { role: tackle_debian, when: ansible_os_family == 'Debian' }

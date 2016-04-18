@@ -1,0 +1,22 @@
+- name: Update Homebrew
+  homebrew: update_homebrew=yes
+
+- name: Tap Caskroom
+  homebrew_tap: tap=caskroom/cask
+
+- name: Install Caskroom
+  homebrew: name=brew-cask state=latest
+
+- name: Install Virtualbox
+  homebrew_cask: name=virtualbox state=present
+  environment:
+    HOMEBREW_CASK_OPTS: --appdir=/Applications
+
+- name: Install Docker and Extras
+  homebrew:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - docker
+    - docker-machine
+    - docker-compose

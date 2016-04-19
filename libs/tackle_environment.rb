@@ -80,7 +80,7 @@ class TackleEnvironment
     if pr["setup"].size > 0
       pr["setup"].each do |cmd|
         puts "Running  #{cmd}".green
-        exit_with_error("Error running  #{cmd}") unless system("cd #{options['root']} && #{cmd}")
+        exit_with_error("Error running  #{cmd}") unless system("cd #{pr['root']} && #{cmd}")
       end
     end
   end

@@ -29,6 +29,17 @@ class TackleCLI < Thor
     end
   end
 
+  desc 'restart [PROJECT]', 'executes up and down commands'
+  def restart(project = nil)
+    if project == nil
+      down
+      up
+    else
+      down(project)
+      up(project)
+    end
+  end
+
   desc 'setup [PROJECT]', 'run setup steps for projects in tackle.yml'
   def setup(project = nil)
     TACKLE_ENVIRONMENT.verify_environment

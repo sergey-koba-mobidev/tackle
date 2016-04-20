@@ -24,6 +24,7 @@ Host machine and containers use [Consul](https://hub.docker.com/r/progrium/consu
 - `help` - Show short help
 - `up [PROJECT]` - Runs Consul, Registrator and Docker Compose for projects in tackle.yml
 - `down [PROJECT]` - Stops Consul, Registrator and Docker Compose for projects in tackle.yml
+- `down [PROJECT]` - Runs down and up commands for projects in tackle.yml
 - `setup [PROJECT]` - Run setup steps for projects in tackle.yml
 - `install` - Install Docker and Docker Compose
 - `list` - lists active projects

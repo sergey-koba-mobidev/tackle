@@ -1,5 +1,6 @@
 require './libs/base/docker_manager_base'
 require 'open3'
+require 'colored'
 
 class DockerManager < DockerManagerBase
   def ip
@@ -21,6 +22,11 @@ class DockerManager < DockerManagerBase
     stdout, stdeerr, status = Open3.capture3('VBoxManage list vms')
     unless stdout.include? vm_name
       system("docker-machine create --driver virtualbox --virtualbox-memory 4096 #{vm_name}")
+
+      # Check Ansible
+      stdout, stdeerr, status = Open3.capture3('ansible --version')
+      return false, "Please install Ansible 2.0 +" unless stdout.include?('ansible 2')
+
       # Configure Hosts's NFS
       system("ansible-playbook ./ansible/darwin_nfs.yml -i 127.0.0.1, --ask-sudo-pass --verbose --extra-vars 'docker_machine_ip=#{ip}'")
       # Add bootsync file to VM

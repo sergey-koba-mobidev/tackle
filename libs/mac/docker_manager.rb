@@ -43,6 +43,14 @@ class DockerManager < DockerManagerBase
     stdout, stdeerr, status = Open3.capture3('VBoxManage list runningvms')
     unless stdout.include? vm_name
       system("VBoxManage startvm #{vm_name} --type headless")
+      for i in 0..10
+        puts "Waitting for tackle...".green
+        if "#{ip}" != ""
+          puts "#{ip} is ready".green
+          break
+        end
+        sleep(2)
+      end
       system("docker-machine ssh #{vm_name} \"echo 'nameserver #{ip}' > /etc/resolv.conf\"")
       system("docker-machine ssh #{vm_name} \"echo 'nameserver 8.8.8.8' >> /etc/resolv.conf && sudo /etc/init.d/docker restart\"")
     end

@@ -21,9 +21,14 @@ class DockerManager < DockerManagerBase
     stdout, stdeerr, status = Open3.capture3('VBoxManage list vms')
     unless stdout.include? vm_name
       system("docker-machine create --driver virtualbox --virtualbox-memory 4096 #{vm_name}")
+      # Configure Hosts's NFS
       system("ansible-playbook ./ansible/darwin_nfs.yml -i 127.0.0.1, --ask-sudo-pass --verbose --extra-vars 'docker_machine_ip=#{ip}'")
+      # Add bootsync file to VM
       system("docker-machine scp docker/bootsync.sh #{vm_name}:/tmp/bootsync.sh")
+      system("docker-machine ssh #{vm_name} \"echo 'grep -q -F \\\"nameserver #{ip}\\\" /etc/resolv.conf || echo \\\"nameserver #{ip}\\\" >> /etc/resolv.conf' >> /tmp/bootsync.sh\"")
+      system("docker-machine ssh #{vm_name} \"echo 'sudo /etc/init.d/docker restart' >> /tmp/bootsync.sh\"")
       system("docker-machine ssh #{vm_name} \"sudo mv /tmp/bootsync.sh /var/lib/boot2docker/bootsync.sh\"")
+      # Restart VM
       system("docker-machine stop #{vm_name}")
       system("docker-machine start #{vm_name}")
     end
@@ -31,6 +36,7 @@ class DockerManager < DockerManagerBase
     stdout, stdeerr, status = Open3.capture3('VBoxManage list runningvms')
     unless stdout.include? vm_name
       system("VBoxManage startvm #{vm_name} --type headless")
+      system("docker-machine ssh #{vm_name} \"echo 'nameserver #{ip}' > /etc/resolv.conf && sudo /etc/init.d/docker restart\"")
     end
 
     stdout, stdeerr, status = Open3.capture3('docker ps')

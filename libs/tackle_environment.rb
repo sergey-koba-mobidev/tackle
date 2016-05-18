@@ -49,7 +49,7 @@ class TackleEnvironment
   end
 
   def run_projects
-    @config_manager.with_projects do |title, options|
+    @config_manager.with_active_projects do |title, options|
       puts "Running docker-compose for #{title}".green
       @docker_manager.run_compose options['root']
     end
@@ -62,15 +62,15 @@ class TackleEnvironment
   end
 
   def stop_projects
-    @config_manager.with_projects do |title, options|
+    @config_manager.with_active_projects do |title, options|
       puts "Stopping docker-compose for #{title}".green
       @docker_manager.stop_compose options['root']
     end
   end
 
   def list_projects
-    @config_manager.with_projects do |title, options|
-      puts "#{title}"
+    @config_manager.with_all_projects do |title, options|
+      puts ((options.key?('active') && !options['active']) ? "[x]".red : "[+]".green) + " #{title}"
     end
   end
 
@@ -86,7 +86,7 @@ class TackleEnvironment
   end
 
   def setup_projects
-    @config_manager.with_projects do |title, options|
+    @config_manager.with_active_projects do |title, options|
       puts "Running setup steps for #{title}".green
       if options["setup"].size > 0
         options["setup"].each do |cmd|
@@ -95,6 +95,13 @@ class TackleEnvironment
         end
       end
     end
+  end
+
+  def activate_project(project, state = true)
+    all_projects = @config_manager.projects_list
+    all_projects[project]['active'] = state
+    @config_manager.save_config(all_projects)
+    list_projects
   end
 
 end

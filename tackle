@@ -60,6 +60,18 @@ class TackleCLI < Thor
     TACKLE_ENVIRONMENT.verify_environment
     TACKLE_ENVIRONMENT.list_projects
   end
+
+  desc 'on [PROJECT]', 'activate a project'
+  def on(project)
+    TACKLE_ENVIRONMENT.verify_environment
+    TACKLE_ENVIRONMENT.activate_project(project)
+  end
+
+  desc 'off [PROJECT]', 'deactivate a project'
+  def off(project)
+    TACKLE_ENVIRONMENT.verify_environment
+    TACKLE_ENVIRONMENT.activate_project(project, false)
+  end
 end
 
 TackleCLI.start(ARGV)

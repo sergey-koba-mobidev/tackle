@@ -28,6 +28,8 @@ Host machine and containers use [Consul](https://hub.docker.com/r/progrium/consu
 - `setup [PROJECT]` - Run setup steps for projects in tackle.yml
 - `install` - Install Docker and Docker Compose
 - `list` - lists active projects
+- `on [PROJECT]` - activate a project
+- `off [PROJECT]` - deactivate a project
 
 Example `./tackle up`
 
